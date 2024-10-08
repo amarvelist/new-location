@@ -4,10 +4,14 @@ eventlet.monkey_patch()
 
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
-import os  # Import os to access environment variables
+from flask_cors import CORS
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
+
+# Enable CORS to allow cross-origin requests
+CORS(app)
 
 # Initialize socketio with eventlet
 socketio = SocketIO(app, async_mode='eventlet')
@@ -19,7 +23,11 @@ def index():
 # Handle data sent from the Android app
 @app.route('/track', methods=['POST'])
 def track():
+    # Debugging: Print incoming data to logs
     data = request.json
+    print("Data received:", data)  # Debugging print
+
+    # Extract longitude, latitude, and floor details from the request
     longitude = data.get('longitude')
     latitude = data.get('latitude')
     floor = data.get('floor')
@@ -27,8 +35,9 @@ def track():
     # Emit the data to the web app via SocketIO
     socketio.emit('location_update', {'longitude': longitude, 'latitude': latitude, 'floor': floor})
     
+    # Return success response
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Get the port from the environment or default to 5000
-    socketio.run(app, host='0.0.0.0', port=port)  # Bind to 0.0.0.0
+    # Debugging: Run the app with SocketIO and eventlet
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
