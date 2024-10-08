@@ -1,12 +1,10 @@
-# app.py
-
 # Import eventlet and monkey patch at the top before any other imports
 import eventlet
 eventlet.monkey_patch()
 
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
-import json
+import os  # Import os to access environment variables
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -32,4 +30,5 @@ def track():
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    port = int(os.environ.get('PORT', 5000))  # Get the port from the environment or default to 5000
+    socketio.run(app, host='0.0.0.0', port=port)  # Bind to 0.0.0.0
