@@ -1,41 +1,61 @@
-// Socket.IO connection to listen for location updates
-var socket = io.connect(window.location.origin);
+// Set up the THREE.js scene, camera, and renderer
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.getElementById('3dview').appendChild(renderer.domElement);
 
-// Get the 2D canvas context
-var canvas = document.getElementById("map");
-var context = canvas.getContext("2d");
+// Plane geometry (floor of the room)
+var geometry = new THREE.PlaneGeometry(9, 5.74);
+var material = new THREE.MeshBasicMaterial({ color: 0xcccccc, side: THREE.DoubleSide });
+var plane = new THREE.Mesh(geometry, material);
+scene.add(plane);
 
-// Room corners (from your architectural map)
-var corners = {
-    A: {lat: 30.8587234, lon: 75.86167},
-    B: {lat: 30.85866605, lon: 75.86168643},
-    C: {lat: 30.8584899, lon: 75.861709167},
-    D: {lat: 30.85825267, lon: 75.8615873}
-};
+// Blue dot to represent position in 3D
+var dotGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+var dotMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+var blueDot = new THREE.Mesh(dotGeometry, dotMaterial);
+scene.add(blueDot);
 
-// Function to convert latitude and longitude to X, Y coordinates
+// Camera position
+camera.position.set(0, 5, 10);
+camera.lookAt(0, 0, 0);
+
+// Animation loop to render the scene
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+animate();
+
+// Convert lat/lon to X, Y for 3D model
 function convertLatLonToXY(lat, lon) {
-    var x = (lon - corners.A.lon) / (corners.D.lon - corners.A.lon) * 600;
-    var y = (lat - corners.A.lat) / (corners.B.lat - corners.A.lat) * 400;
+    var latA = 30.8587234, lonA = 75.86167;
+    var latD = 30.85825267, lonD = 75.8615873;
+
+    var x = (lon - lonA) / (lonD - lonA) * 9;
+    var y = (lat - latA) / (latA - latD) * 5.74;
     return { x: x, y: y };
 }
 
-// Draw the room outline on the canvas
-function drawRoom() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.strokeStyle = "#000";
-    context.strokeRect(0, 0, 600, 400);
+// Function to validate latitude and longitude
+function isValidCoordinates(lat, lon) {
+    const validLatRange = [-90, 90];
+    const validLonRange = [-180, 180];
+    return (
+        lat >= validLatRange[0] && lat <= validLatRange[1] &&
+        lon >= validLonRange[0] && lon <= validLonRange[1]
+    );
 }
 
-// Update the blue dot position on the 2D map
+// Listen for location updates via Socket.IO
+const socket = io.connect('http://localhost:5000'); // Adjust URL as needed
+
 socket.on('location_update', function (data) {
-    drawRoom();  // Redraw the room outline
-
-    var position = convertLatLonToXY(data.latitude, data.longitude);
-
-    // Draw the blue dot
-    context.beginPath();
-    context.arc(position.x, position.y, 5, 0, 2 * Math.PI, false);
-    context.fillStyle = "blue";
-    context.fill();
+    if (isValidCoordinates(data.latitude, data.longitude)) {
+        var position = convertLatLonToXY(data.latitude, data.longitude);
+        blueDot.position.set(position.x - 4.5, position.y - 2.87, 0);
+    } else {
+        console.log('Received invalid coordinates:', data);
+    }
 });
