@@ -30,18 +30,26 @@ def track():
     user_id = data.get('id')  # Adjusted from 'user_id' to 'id'
     floor = data.get('floor')
 
-    # Print the received data for debugging
-    print(f"Received data: {data}")
+    # Define the valid range for latitude and longitude
+    valid_lat_range = (-90, 90)
+    valid_lon_range = (-180, 180)
 
-    # Emit the data to the web app via SocketIO
-    socketio.emit('location_update', {
-        'latitude': latitude, 
-        'longitude': longitude, 
-        'username': username,
-        'user_id': user_id,
-        'floor': floor
-    })
-    
+    # Check if latitude and longitude are within the valid range
+    if valid_lat_range[0] <= latitude <= valid_lat_range[1] and valid_lon_range[0] <= longitude <= valid_lon_range[1]:
+        # Print the received data for debugging
+        print(f"Received valid data: {data}")
+
+        # Emit the data to the web app via SocketIO
+        socketio.emit('location_update', {
+            'latitude': latitude, 
+            'longitude': longitude, 
+            'username': username,
+            'user_id': user_id,
+            'floor': floor
+        })
+    else:
+        print(f"Received invalid data: {data}")
+
     return jsonify({"status": "success"})
 
 @socketio.on('connect')
