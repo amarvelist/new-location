@@ -23,7 +23,7 @@ def index():
 def track():
     data = request.json
     
-    # Extract the required fields from the received data (name and id adjusted based on the app's data structure)
+    # Extract the required fields from the received data
     latitude = data.get('latitude')
     longitude = data.get('longitude')
     username = data.get('name')  # Adjusted from 'username' to 'name'
