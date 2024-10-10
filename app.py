@@ -1,7 +1,7 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template  # Import render_template
 from flask_socketio import SocketIO
 from flask_cors import CORS  # Import CORS for cross-origin requests
 
@@ -16,7 +16,7 @@ socketio = SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
 
 @app.route('/')
 def index():
-    return "Welcome to the Real-Time Tracking App!"
+    return render_template('index.html')  # Corrected to render_template
 
 # Handle data sent from the Android app
 @app.route('/track', methods=['POST'])

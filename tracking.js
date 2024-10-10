@@ -30,11 +30,11 @@ animate();
 
 // Convert lat/lon to X, Y for 3D model
 function convertLatLonToXY(lat, lon) {
-    var latA = 30.8587234, lonA = 75.86167;
-    var latD = 30.85825267, lonD = 75.8615873;
+    const latA = 30.8587234, lonA = 75.86167;
+    const latD = 30.85825267, lonD = 75.8615873;
 
-    var x = (lon - lonA) / (lonD - lonA) * 9;
-    var y = (lat - latA) / (latA - latD) * 5.74;
+    const x = (lon - lonA) / (lonD - lonA) * 9;
+    const y = (lat - latA) / (latA - latD) * 5.74;
     return { x: x, y: y };
 }
 
@@ -51,11 +51,11 @@ function isValidCoordinates(lat, lon) {
 // Listen for location updates via Socket.IO
 const socket = io.connect('http://localhost:5000'); // Adjust URL as needed
 
-socket.on('location_update', function (data) {
+socket.on('location_update', function(data) {
     if (isValidCoordinates(data.latitude, data.longitude)) {
-        var position = convertLatLonToXY(data.latitude, data.longitude);
+        const position = convertLatLonToXY(data.latitude, data.longitude);
         blueDot.position.set(position.x - 4.5, position.y - 2.87, 0);
     } else {
-        console.log('Received invalid coordinates:', data);
+        console.error('Received invalid coordinates:', data);
     }
 });
